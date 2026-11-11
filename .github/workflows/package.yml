@@ -28,7 +28,7 @@ jobs:
           sudo apt-get install -y ./clean-system_*_all.deb
           test "$(command -v clean-system)" = /usr/bin/clean-system
           clean-system --help
-          clean-system --only logs --dry-run
+          sudo clean-system --only logs --dry-run
           sudo apt-get install --reinstall -y ./clean-system_*_all.deb
           sudo dpkg --verify clean-system
           sudo apt-get remove -y clean-system

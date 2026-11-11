@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 LOG_ROOT = Path("/var/log")
 MAN_ROOT = Path("/var/cache/man")
 LOCK_PATH = "/run/lock/clean-system.lock"

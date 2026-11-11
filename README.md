@@ -5,7 +5,7 @@ Installation Debian/Ubuntu : télécharger le `.deb` depuis les
 [releases](https://github.com/Alexandre-Ayatoo/clean-var-log-cache/releases), puis :
 
 ```sh
-sudo apt install ./clean-system_1.1.0_all.deb
+sudo apt install ./clean-system_1.1.1_all.deb
 clean-system --help
 clean-system --verbose       # simulation, aucune modification
 sudo clean-system --apply   # nettoyage réel
