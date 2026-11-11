@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 LOG_ROOT = Path("/var/log")
 MAN_ROOT = Path("/var/cache/man")
 LOCK_PATH = "/run/lock/clean-system.lock"
@@ -44,7 +44,7 @@ def parser():
         description="Nettoie les anciens logs et caches Linux. Simulation par défaut.",
         add_help=False,
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""Périmètre et garanties :
+        epilog=f"""Périmètre et garanties :
   logs     /var/log : rotations reconnues (.log.1, syslog.2.gz,
            app.log-20260101.xz...), selon leur dernière modification.
            Les logs actifs ne sont jamais vidés. Les dossiers journal,
@@ -74,17 +74,31 @@ def parser():
   fichiers encore ouverts, compression et commandes natives notamment).
   Python >= 3.9 et Linux requis. Aucun paquet Python à installer.
 
+Installation et mise à jour (Debian/Ubuntu, paquet téléchargé) :
+  sudo apt install ./clean-system_{VERSION}_all.deb
+  sudo apt remove clean-system               # désinstallation
+  Le paquet installe /usr/bin/clean-system et déclare Python >= 3.9.
+  Aucun nettoyage ni tâche planifiée n'est lancé à l'installation.
+
+Installation directe (autres Linux, Python >= 3.9 déjà installé) :
+  sudo install -m 0755 clean-system.py /usr/local/bin/clean-system
+  Mise à jour : répéter la même commande avec le nouveau fichier.
+  Désinstallation : sudo rm /usr/local/bin/clean-system
+  Choisir une seule méthode : /usr/local/bin peut masquer /usr/bin.
+  Depuis le dépôt sans installation : remplacer clean-system ci-dessous
+  par ./clean-system.py.
+
 Exemples :
-  ./clean-system.py --help
-  ./clean-system.py --verbose                 # aperçu détaillé
-  sudo ./clean-system.py --apply              # nettoyage standard
-  sudo ./clean-system.py --apply --days 30 --journal-days 30
-  ./clean-system.py --only logs --exclude /var/log/nginx --verbose
-  sudo ./clean-system.py --apply --only cache
-  sudo ./clean-system.py --apply --only logs,cache,journal,tmp
-  sudo ./clean-system.py --apply > nettoyage.txt 2>&1
+  clean-system --help
+  clean-system --verbose                     # aperçu détaillé
+  sudo clean-system --apply                  # nettoyage standard
+  sudo clean-system --apply --days 30 --journal-days 30
+  clean-system --only logs --exclude /var/log/nginx --verbose
+  sudo clean-system --apply --only cache
+  sudo clean-system --apply --only logs,cache,journal,tmp
+  sudo clean-system --apply > nettoyage.txt 2>&1
   # Cron root, chaque dimanche à 03:15 (chemin absolu à adapter) :
-  15 3 * * 0 /opt/clean-system/clean-system.py --apply
+  15 3 * * 0 /usr/bin/clean-system --apply
 
 Codes de sortie : 0 succès (y compris outils absents), 1 erreur d'exécution
 ou accès refusé, 2 arguments invalides, 130 interruption clavier.

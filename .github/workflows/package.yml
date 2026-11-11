@@ -1,0 +1,60 @@
+name: Paquet Debian
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Construction sans root
+        run: python3 scripts/build-deb.py
+      - name: Installation, mise à jour et désinstallation
+        run: |
+          cd dist
+          sha256sum --check SHA256SUMS
+          sudo apt-get install -y ./clean-system_*_all.deb
+          test "$(command -v clean-system)" = /usr/bin/clean-system
+          clean-system --help
+          clean-system --only logs --dry-run
+          sudo apt-get install --reinstall -y ./clean-system_*_all.deb
+          sudo dpkg --verify clean-system
+          sudo apt-get remove -y clean-system
+          test ! -e /usr/bin/clean-system
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Construire et vérifier la version du tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 scripts/build-deb.py
+          test -f "dist/clean-system_${RELEASE_TAG#v}_all.deb"
+      - name: Publier le paquet et son empreinte
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" dist/*.deb dist/SHA256SUMS \
+            --verify-tag --title "clean-system $RELEASE_TAG" --notes-file packaging/release-notes.md
